@@ -49,6 +49,10 @@ func (s *Service) UseTron() *tron.Provider {
 	return s.handler.providers[wallet.TRON].(*tron.Provider)
 }
 
+func (s *Service) GetProvider(blockchain wallet.Blockchain) Provider {
+	return s.handler.providers[blockchain]
+}
+
 type CreateInfo struct {
 	ChainID   uint64
 	ChainName string

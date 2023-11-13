@@ -10,6 +10,7 @@ import (
 	"github.com/skyisboss/pay-system/ent"
 	"github.com/skyisboss/pay-system/internal/config"
 	"github.com/skyisboss/pay-system/internal/rpc/ethrpc"
+	"github.com/skyisboss/pay-system/internal/rpc/tronrpc"
 	"github.com/skyisboss/pay-system/internal/service/address"
 	"github.com/skyisboss/pay-system/internal/service/apprun"
 	"github.com/skyisboss/pay-system/internal/service/balance"
@@ -36,7 +37,8 @@ type Container struct {
 	dbClient *ent.Client
 
 	// Clients
-	ethClient *ethrpc.Client
+	ethClient  *ethrpc.Client
+	tronClient *tronrpc.Client
 	// trxClient *trx.Client
 	// bscClient *bsc.Client
 
@@ -218,6 +220,19 @@ func (c *Container) EthClient() *ethrpc.Client {
 		c.ethClient = client
 	})
 	return c.ethClient
+}
+
+func (c *Container) TronClient() *tronrpc.Client {
+	c.init("service.TronClient", func() {
+		rpc_url := c.config.Providers.TronRpc
+		client, err := tronrpc.New(rpc_url)
+		if err != nil {
+			c.logger.Fatal().Msgf("init client error: [%T] %s", err, err.Error())
+			return
+		}
+		c.tronClient = client
+	})
+	return c.tronClient
 }
 
 func (c *Container) init(key string, f func()) {
