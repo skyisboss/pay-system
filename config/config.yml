@@ -1,0 +1,27 @@
+version: 1.0.0
+logger:
+  pretty: true
+  level: debug
+
+database:
+  mysql:
+    data_source: root:root@tcp(127.0.0.1:3306)/pay-system?charset=utf8mb4&parseTime=True&loc=Local
+    db_debug: true
+  postgres:
+    data_source: "host=localhost sslmode=disable dbname=oxygen user=oxygen password=qwerty pool_max_conns=32"
+    db_debug: true
+system:
+  server:
+    port: 80
+    cors:
+      allow_origins:
+        - https://pay.site.com
+  processing:
+    webhook_base_path: https://pay.site.com
+    payment_frontend: https://pay.site.com
+
+providers:
+  salt_key: 20231010
+  eth_rpc: https://sepolia.infura.io/v3/d765e4b6176244dc8ce59f613b686a3d
+  eth_gas: https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=EPVA2QQFXXIDAYPQ4VWKAV3BWZJUARQ9CE
+  tron_rpc: grpc.nile.trongrid.io:50051
