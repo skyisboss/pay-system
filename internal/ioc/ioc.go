@@ -125,6 +125,7 @@ func (c *Container) WalletService() *wallet.Service {
 			}).
 			AddProvider(&wallet.TronProvider{
 				Blockchain: wallet.TRON,
+				Client:     c.TronClient(),
 			})
 		c.walletService = wallet.New(c.DBClient(), providers, c.logger)
 	})

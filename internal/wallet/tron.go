@@ -1,7 +1,10 @@
 package wallet
 
+import "github.com/skyisboss/pay-system/internal/rpc/tronrpc"
+
 type TronProvider struct {
 	Blockchain Blockchain
+	Client     *tronrpc.Client
 }
 
 func (pv *TronProvider) GetBlockchain() Blockchain {
