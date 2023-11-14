@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/skyisboss/pay-system/internal/app/task"
+	"github.com/skyisboss/pay-system/internal/app/task/eth"
+	"github.com/skyisboss/pay-system/internal/app/task/tron"
 	"github.com/skyisboss/pay-system/internal/util"
 	"github.com/skyisboss/pay-system/internal/wallet"
 )
@@ -55,4 +58,19 @@ func TestAddressEncode(t *testing.T) {
 	// boot.Ioc().WalletService().PrivateKeyEncode(&wt)
 	wt.EncodePrivateKey(cfg.Providers.SaltKey)
 	util.ToJson(wt)
+}
+
+func TestCheckAddress(t *testing.T) {
+	_, _, boot, logger := Setup()
+	taskHandler := task.NewProvider().
+		AddProvider(&eth.Provider{Blockchain: wallet.ETH}).
+		AddProvider(&tron.Provider{Blockchain: wallet.TRON})
+	tasks := task.New(
+		boot.Ioc(),
+		taskHandler,
+		logger,
+	)
+	fmt.Println(1)
+
+	tasks.CheckFreeAddress()
 }

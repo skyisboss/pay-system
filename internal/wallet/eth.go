@@ -30,7 +30,7 @@ func (p *EthProvider) ValidateAddress(address string) bool {
 func (p *EthProvider) CreateWallet() *Wallet {
 	key, err := crypto.GenerateKey()
 	if err != nil {
-		return &Wallet{}
+		return nil
 	}
 	address := crypto.PubkeyToAddress(key.PublicKey).Hex()
 	privateKey := hexutil.Encode(crypto.FromECDSA(key))

@@ -20,6 +20,7 @@ import (
 // PKCS7Padding
 
 // AesEncrypt 加密
+// key 16,24,32位字符串的话，分别对应AES-128，AES-192，AES-256 加密方法
 func AesEncrypt(orig string, key string) (string, error) {
 	// 转成字节数组
 	origData := []byte(orig)

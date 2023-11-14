@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -45,7 +44,7 @@ func (s *Service) EthProvider() *eth.Provider {
 	return p.SetInit(s.ioc)
 }
 
-func (s *Service) UseTron() *tron.Provider {
+func (s *Service) TronProvider() *tron.Provider {
 	return s.handler.providers[wallet.TRON].(*tron.Provider)
 }
 
@@ -53,75 +52,67 @@ func (s *Service) GetProvider(blockchain wallet.Blockchain) Provider {
 	return s.handler.providers[blockchain]
 }
 
-type CreateInfo struct {
-	ChainID   uint64
-	ChainName string
-	minFree   int64
-	currFree  int64
-}
-
-// 检测剩余可用地址
+// 检测剩余可用地址 获取币种配置信息 过滤出主币
 func (s *Service) CheckFreeAddress() {
-	log := s.logger
+	ioc := s.ioc
+	log := ioc.Logger()
 	ctx := context.Background()
-	bcService := s.ioc.BlockchainService()
-	addressService := s.ioc.AddressService()
-	// kmsService := s.ioc.KmsService()
-	// 获取最小的可用地址数量
-	chains, err := bcService.GetAll(ctx)
-	if err != nil {
-		log.Error().Err(err).Msg("err")
+	if ok := ioc.ApprunService().Lock(ctx, "CheckFreeAddress"); !ok {
 		return
 	}
-	createInfoMap := make(map[string]*CreateInfo)
-	var lock sync.Mutex
-	for _, v := range chains {
-		currFree, err := addressService.GetCountByChainID(ctx, v.ID)
+	defer ioc.ApprunService().UnLock(ctx, "CheckFreeAddress")
+
+	// 获取币种配置信息
+	cfgs, err := ioc.BlockchainService().GetAll(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("获取币种配置")
+		return
+	}
+
+	for _, item := range cfgs {
+		cfg := item
+		// 过滤代币，只需要主币
+		if cfg.Chain != cfg.Types || cfg.TokenAbi != "" || cfg.TokenAddress != "" {
+			continue
+		}
+		// 统计address表里剩余可用数量
+		count, err := ioc.AddressService().GetCountByChainID(ctx, cfg.ID)
 		if err != nil {
 			log.Error().Err(err).Msg("err")
 			return
 		}
-		lock.Lock()
-		_, ok := createInfoMap[v.Chain]
-		if !ok {
-			createInfoMap[v.Chain] = &CreateInfo{
-				ChainID:   v.ID,
-				ChainName: v.Chain,
-				minFree:   0,
-				currFree:  0,
-			}
-		}
-		createInfoMap[v.Chain].minFree += int64(v.MinFreeNum)
-		createInfoMap[v.Chain].currFree += currFree
-		lock.Unlock()
-	}
 
-	var rows []*wallet.Wallet
-	for _, itemRow := range createInfoMap {
-		if itemRow.currFree < itemRow.minFree {
-			ethProvider := s.ioc.WalletService().GetProvider(wallet.ETH).(*wallet.EthProvider)
-			for i := int64(0); i < itemRow.minFree-itemRow.currFree; i++ {
-				row := ethProvider.CreateWallet()
-				if row == nil {
-					log.Error().Msg("CreateWallet error")
-					return
-				}
-				rows = append(rows, row)
-				// row, err := kmsService.CreateWallet(ctx, kms.Blockchain(itemRow.ChainName))
-				// if err != nil {
-				// 	log.Error().Err(err).Msg("err")
-				// 	return
-				// }
-				// row.ChainID = itemRow.ChainID
-				// rows = append(rows, row)
-			}
+		freeNum := cfg.MinFreeNum - count
+		if freeNum <= 0 {
+			continue
 		}
-	}
-	// 一次性将生成的地址存入数据库
-	if len(rows) > 0 {
-		_, err := addressService.CreateMany(ctx, rows)
-		if err != nil {
-			log.Error().Err(err).Msg("err")
+
+		var rows []*ent.Addres
+		provider := ioc.WalletService().GetProvider(wallet.Blockchain(cfg.Chain))
+		for i := int64(0); i < freeNum; i++ {
+			wt := provider.CreateWallet()
+			if wt == nil {
+				log.Error().Msg("CreateWallet error")
+				continue
+			}
+			password, err := wt.EncodePrivateKey(ioc.Config().Providers.SaltKey)
+			if err != nil {
+				log.Error().Err(err).Msg("EncodePrivateKey")
+				continue
+			}
+			rows = append(rows, &ent.Addres{
+				ChainID:  cfg.ID,
+				Address:  wt.Address,
+				Password: password,
+				UUID:     wt.UUID,
+			})
+		}
+		if len(rows) > 0 {
+			_, err = ioc.AddressService().CreateMany(ctx, rows)
+			if err != nil {
+				log.Error().Err(err).Msg("err")
+				continue
+			}
 		}
 	}
 }

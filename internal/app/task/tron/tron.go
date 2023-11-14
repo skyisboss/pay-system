@@ -7,9 +7,13 @@ import (
 
 type Provider struct {
 	Blockchain wallet.Blockchain
-	Ioc        *ioc.Container
+	Container  *ioc.Container
 }
 
 func (p *Provider) GetBlockchain() wallet.Blockchain {
 	return p.Blockchain
+}
+
+func (p *Provider) Ioc() *ioc.Container {
+	return p.Container
 }

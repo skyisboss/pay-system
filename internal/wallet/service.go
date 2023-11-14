@@ -78,3 +78,17 @@ func (w *Wallet) DecodePrivateKey(saltKey string) (string, error) {
 	}
 	return ret, nil
 }
+
+type ChainID uint64
+
+func (c ChainID) String() string {
+	return util.IntToString(uint64(c))
+}
+
+type PkID uint64
+
+type Address string
+
+func (c Address) String() string {
+	return string(c)
+}

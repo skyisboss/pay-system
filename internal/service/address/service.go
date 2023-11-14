@@ -7,7 +7,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/skyisboss/pay-system/ent"
 	"github.com/skyisboss/pay-system/ent/addres"
-	"github.com/skyisboss/pay-system/internal/wallet"
 )
 
 type Service struct {
@@ -29,15 +28,16 @@ func (s *Service) GetCountByChainID(ctx context.Context, chainID uint64) (int64,
 	return int64(count), err
 }
 
-func (s *Service) CreateMany(ctx context.Context, address []*wallet.Wallet) (int64, error) {
+func (s *Service) CreateMany(ctx context.Context, address []*ent.Addres) (int64, error) {
 	rows := []*ent.AddresCreate{}
 	for _, v := range address {
 		row := s.client.Addres.Create().
 			SetUUID(v.UUID).
-			// SetChainID(v.ChainID).
+			SetChainID(v.ChainID).
 			SetAddress(v.Address).
-			SetPassword(v.PrivateKey).
+			SetPassword(v.Password).
 			SetCreatedAt(time.Now()).
+			SetUseTo(0).
 			SetUseTo(0)
 		rows = append(rows, row)
 	}

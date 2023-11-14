@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -152,4 +153,8 @@ func GetFuncName() string {
 	runtime.Callers(2, pc)
 	f := runtime.FuncForPC(pc[0])
 	return f.Name()
+}
+
+func IntToString[T int64 | uint64](n T) string {
+	return strconv.FormatUint(uint64(n), 10)
 }

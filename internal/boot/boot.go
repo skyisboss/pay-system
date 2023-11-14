@@ -60,7 +60,7 @@ func (b *Boot) RunServerTask() {
 	logger := b.logger.With().Str("channel", "task").Logger()
 	taskHandler := task.NewProvider().
 		AddProvider(&eth.Provider{Blockchain: wallet.ETH}).
-		AddProvider(&tron.Provider{Blockchain: wallet.TRON, Ioc: b.Ioc()})
+		AddProvider(&tron.Provider{Blockchain: wallet.TRON, Container: b.Ioc()})
 	tasks := task.New(
 		b.Ioc(),
 		taskHandler,
