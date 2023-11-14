@@ -75,3 +75,65 @@ func TestWithdrawAdd(t *testing.T) {
 
 	fmt.Println(3)
 }
+
+func TestWithdrawAddTron(t *testing.T) {
+
+	ctx, _, boot, log := Setup()
+	// 添加提款数据
+	t.Run("add-trx", func(t *testing.T) {
+		data := &ent.Withdraw{
+			ProductID:    1,
+			SerialID:     util.GetUUID(),
+			ToAddress:    "TMNXXt5vyCiSo8G4ydknZU7mx7rV8gbvvs",
+			ChainID:      3,
+			AmountStr:    "10.123",
+			AmountRaw:    decimal.NewFromFloat(10123000),
+			TxHash:       "",
+			HandleStatus: 0,
+			HandleMsg:    "",
+			HandleTime:   time.Now(),
+		}
+		_, err := boot.Ioc().WithdrawService().CreateNew(ctx, data)
+		if err != nil {
+			log.Fatal().Err(err).Msg("err")
+		}
+	})
+
+	t.Run("add-trc20", func(t *testing.T) {
+		data := &ent.Withdraw{
+			ProductID:    1,
+			SerialID:     util.GetUUID(),
+			ToAddress:    "TMNXXt5vyCiSo8G4ydknZU7mx7rV8gbvvs",
+			ChainID:      4,
+			AmountStr:    "88.000000",
+			AmountRaw:    decimal.NewFromFloat(88000000),
+			TxHash:       "",
+			HandleStatus: 0,
+			HandleMsg:    "",
+			HandleTime:   time.Now(),
+		}
+		_, err := boot.Ioc().WithdrawService().CreateNew(ctx, data)
+		if err != nil {
+			log.Fatal().Err(err).Msg("err")
+		}
+	})
+
+	fmt.Println(3)
+}
+
+func TestWithdrawTron(t *testing.T) {
+	_, _, boot, logger := Setup()
+
+	taskHandler := task.NewProvider().
+		AddProvider(&eth.Provider{Blockchain: wallet.ETH}).
+		AddProvider(&tron.Provider{Blockchain: wallet.TRON, Container: boot.Ioc()})
+	tasks := task.New(
+		boot.Ioc(),
+		taskHandler,
+		logger,
+	)
+
+	tasks.GetProvider(wallet.TRON).(*tron.Provider).CheckWithdraw()
+
+	fmt.Println(2)
+}

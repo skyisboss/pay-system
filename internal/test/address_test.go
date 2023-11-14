@@ -74,3 +74,19 @@ func TestCheckAddress(t *testing.T) {
 
 	tasks.CheckFreeAddress()
 }
+
+func TestAddressEncodeTron(t *testing.T) {
+	_, cfg, _, _ := Setup()
+	wt := wallet.Wallet{
+		Address:    "TMNXXt5vyCiSo8G4ydknZU7mx7rV8gbvvs",
+		UUID:       "94c3ff8a8cb347f38bc060b7b6524944",
+		PrivateKey: "a5b3300d7cba845e9daa089574d01a7b656aa6aba3ad999e8352282657b9562b",
+	}
+	// boot.Ioc().WalletService().PrivateKeyEncode(&wt)
+	pk, _ := wt.EncodePrivateKey(cfg.Providers.SaltKey)
+	wt.PrivateKey = pk
+	util.ToJson(wt)
+
+	pk2, _ := wt.DecodePrivateKey(cfg.Providers.SaltKey)
+	util.Println(pk2)
+}

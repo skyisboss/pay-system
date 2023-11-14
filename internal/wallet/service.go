@@ -57,6 +57,8 @@ type Wallet struct {
 	Address    string     `json:"address"`
 	Blockchain Blockchain `json:"blockchain"`
 	PrivateKey string     `json:"private_key"`
+	Nonce      int64
+	Balance    map[string]int64
 }
 
 // 加密密钥
