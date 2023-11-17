@@ -25,3 +25,19 @@ func TestChecTxSend(t *testing.T) {
 	tasks.EthProvider().CheckTxSend()
 	fmt.Println(1)
 }
+
+func TestChecTxSendTron(t *testing.T) {
+	_, _, boot, logger := Setup()
+
+	taskHandler := task.NewProvider().
+		AddProvider(&eth.Provider{Blockchain: wallet.ETH}).
+		AddProvider(&tron.Provider{Blockchain: wallet.TRON, Container: boot.Ioc()})
+	tasks := task.New(
+		boot.Ioc(),
+		taskHandler,
+		logger,
+	)
+
+	tasks.TronProvider().CheckTxSend()
+	fmt.Println(111)
+}

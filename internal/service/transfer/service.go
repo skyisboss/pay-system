@@ -2,7 +2,6 @@ package transfer
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -112,9 +111,7 @@ func (s *Service) ListByHandleStatus(ctx context.Context, q QuerySend) ([]*ent.T
 		Where(transfer.HandleStatusEQ(q.HandleStatus.Int64())).
 		Where(transfer.ChainIDIn(q.ChainIDs...)).
 		All(ctx)
-	if len(ret) <= 0 {
-		return nil, errors.New("没有要处理的数据")
-	}
+
 	return ret, err
 }
 

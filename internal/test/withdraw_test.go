@@ -135,5 +135,5 @@ func TestWithdrawTron(t *testing.T) {
 
 	tasks.GetProvider(wallet.TRON).(*tron.Provider).CheckWithdraw()
 
-	fmt.Println(2)
+	fmt.Println(21)
 }
