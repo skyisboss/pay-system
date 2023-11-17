@@ -4,7 +4,9 @@ import (
 	"context"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	"github.com/skyisboss/pay-system/internal/app/api/router"
 	"github.com/skyisboss/pay-system/internal/app/task"
 	"github.com/skyisboss/pay-system/internal/app/task/eth"
 	"github.com/skyisboss/pay-system/internal/app/task/tron"
@@ -49,10 +51,22 @@ func (b *Boot) Logger() *zerolog.Logger {
 }
 
 // 对外api服务
-func (b *Boot) RunServerApi() {}
+func (b *Boot) RunServerApi() {
+	app := gin.New()
+	app.Use(gin.Logger(), gin.Recovery())
+	router.NewApi(app, b.Ioc())
+
+	app.Run(":52088")
+}
 
 // 后台服务
-func (b *Boot) RunServerAdmin() {}
+func (b *Boot) RunServerAdmin() {
+	app := gin.New()
+	app.Use(gin.Logger(), gin.Recovery())
+	router.NewAdmin(app, b.Ioc())
+
+	app.Run(":52033")
+}
 
 // 定时任务
 func (b *Boot) RunServerTask() {

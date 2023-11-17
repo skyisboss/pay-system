@@ -64,5 +64,7 @@ func init() {
 	rootCmd.AddCommand(migrateCommand)
 	rootCmd.AddCommand(cliCommand)
 	rootCmd.AddCommand(jobCommand)
+	rootCmd.AddCommand(apiCommand)
+	rootCmd.AddCommand(adminCommand)
 
 }
