@@ -1,10 +1,9 @@
-package eth
+package tron
 
 import (
 	"context"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/skyisboss/pay-system/ent"
 	ent_transfer "github.com/skyisboss/pay-system/ent/transfer"
 	ent_withdraw "github.com/skyisboss/pay-system/ent/withdraw"
@@ -14,24 +13,19 @@ import (
 	"github.com/skyisboss/pay-system/internal/wallet"
 )
 
-type ConfirmUpdates struct {
-	Gas      int64
-	GasPrice int64
-}
-
 // 检测交易是否上链
 // 检查 Transfer 表数据的tx_id 以便确认此交易已经上链
 // 根据 related_type 判断是那种交易 1xx - 零钱整理 / 2xx - 用户提币，更新对应数据
 func (p *Provider) CheckTxConfirm() {
-	log := p.ioc.Logger()
+	log := p.Ioc().Logger()
 	ctx := context.Background()
-	if ok := p.ioc.ApprunService().Lock(ctx, "CheckTxConfirm"); !ok {
+	if ok := p.Ioc().ApprunService().Lock(ctx, "CheckTxConfirm-tron"); !ok {
 		return
 	}
-	defer p.ioc.ApprunService().UnLock(ctx, "CheckTxConfirm")
+	defer p.Ioc().ApprunService().UnLock(ctx, "CheckTxConfirm-tron")
 
 	// 获取币种配置信息
-	cfgs, err := p.ioc.BlockchainService().GetByChain(ctx, wallet.ETH)
+	cfgs, err := p.Ioc().BlockchainService().GetByChain(ctx, wallet.TRON)
 	if err != nil {
 		log.Error().Err(err).Msg("获取币种配置")
 		return
@@ -39,12 +33,12 @@ func (p *Provider) CheckTxConfirm() {
 	chainIDs := util.MapSlice(cfgs, func(e *ent.Blockchain) uint64 {
 		return e.ID
 	})
-	chainIDMap := util.KeyFunc(cfgs, func(e *ent.Blockchain) ChainID {
-		return ChainID(e.ID)
+	chainIDMap := util.KeyFunc(cfgs, func(e *ent.Blockchain) wallet.ChainID {
+		return wallet.ChainID(e.ID)
 	})
 
 	// 获取待检测数据
-	transferRows, err := p.ioc.TransferService().ListByHandleStatus(ctx, transfer.QuerySend{
+	transferRows, err := p.Ioc().TransferService().ListByHandleStatus(ctx, transfer.QuerySend{
 		ChainIDs:     chainIDs,
 		HandleStatus: transfer.HandleStatusSend,
 	})
@@ -57,8 +51,11 @@ func (p *Provider) CheckTxConfirm() {
 		return
 	}
 
+	util.Println(chainIDMap)
+	util.ToJson(transferRows)
+
 	// 获取当前链上最新区块数
-	rpcNum, err := p.RpcGetBlockNumber(ctx)
+	rpcNum, err := p.Ioc().WalletService().GetProvider(wallet.TRON).(*wallet.TronProvider).RpcBlockNumber()
 	if err != nil {
 		log.Error().Err(err).Msg("err")
 		return
@@ -67,12 +64,14 @@ func (p *Provider) CheckTxConfirm() {
 	var relatedIDs []uint64
 	relatedTypeMap := make(map[int64][]uint64)
 	confirmIDMap := make(map[uint64]*ConfirmUpdates)
+	// 根据哈希获取交易信息
 	for _, itemRow := range transferRows {
-		cfg, ok := chainIDMap[ChainID(itemRow.ChainID)]
+		cfg, ok := chainIDMap[wallet.ChainID(itemRow.ChainID)]
 		if !ok {
 			log.Error().Msg("无法获取配置")
 			continue
 		}
+
 		// 占位数据标注为确认
 		if itemRow.Nonce < 0 && itemRow.Hex == "" {
 			if !util.InArray(relatedIDs, itemRow.RelatedID) {
@@ -87,17 +86,17 @@ func (p *Provider) CheckTxConfirm() {
 		}
 
 		// 根据哈希获取交易信息
-		txHash := common.HexToHash(itemRow.TxID)
-		rpcTx, err := p.ioc.EthClient().TransactionReceipt(ctx, txHash)
+		util.Println(rpcNum, cfg)
+		rpcTx, err := p.Ioc().TronClient().GRPC.GetTransactionInfoByID(itemRow.TxID)
 		if err != nil {
-			log.Error().Err(err).Msg("TransactionByHash")
-			return
+			log.Error().Err(err).Msg("GetTransactionInfoByID")
+			continue
 		}
-		if rpcTx == nil || rpcTx.Status != 1 {
+		if rpcTx == nil {
 			continue
 		}
 		// 最小确认数
-		conrifmNum := rpcNum - rpcTx.BlockNumber.Int64() + 1
+		conrifmNum := rpcNum - rpcTx.BlockNumber + 1
 		if conrifmNum < cfg.MinConfirmNum {
 			continue
 		}
@@ -107,15 +106,15 @@ func (p *Provider) CheckTxConfirm() {
 			relatedTypeMap[itemRow.RelatedType] = relatedIDs
 		}
 		confirmIDMap[itemRow.ID] = &ConfirmUpdates{
-			Gas:      int64(rpcTx.GasUsed),
-			GasPrice: rpcTx.EffectiveGasPrice.Int64(),
+			Gas:      rpcTx.Fee,
+			GasPrice: rpcTx.Fee,
 		}
 	}
 
 	// 开启事务
-	tx, err := p.ioc.DBClient().Tx(ctx)
+	tx, err := p.Ioc().DBClient().Tx(ctx)
 	if err != nil {
-		p.ioc.Logger().Error().Err(err).Msg("new transactional client")
+		p.Ioc().Logger().Error().Err(err).Msg("new transactional client")
 		return
 	}
 
@@ -175,4 +174,9 @@ func (p *Provider) CheckTxConfirm() {
 	}
 
 	tx.Commit()
+}
+
+type ConfirmUpdates struct {
+	Gas      int64
+	GasPrice int64
 }
