@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+#root,
+body,
+html {
+  height: 100%;
+}
+
+body {
+  font-family: Inter, font-family-normal;
+}
