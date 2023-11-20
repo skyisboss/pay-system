@@ -68,6 +68,20 @@ func (pc *ProductCreate) SetAppID(s string) *ProductCreate {
 	return pc
 }
 
+// SetAppType sets the "app_type" field.
+func (pc *ProductCreate) SetAppType(i int64) *ProductCreate {
+	pc.mutation.SetAppType(i)
+	return pc
+}
+
+// SetNillableAppType sets the "app_type" field if the given value is not nil.
+func (pc *ProductCreate) SetNillableAppType(i *int64) *ProductCreate {
+	if i != nil {
+		pc.SetAppType(*i)
+	}
+	return pc
+}
+
 // SetAppName sets the "app_name" field.
 func (pc *ProductCreate) SetAppName(s string) *ProductCreate {
 	pc.mutation.SetAppName(s)
@@ -111,6 +125,7 @@ func (pc *ProductCreate) Mutation() *ProductMutation {
 
 // Save creates the Product in the database.
 func (pc *ProductCreate) Save(ctx context.Context) (*Product, error) {
+	pc.defaults()
 	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
@@ -136,10 +151,21 @@ func (pc *ProductCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (pc *ProductCreate) defaults() {
+	if _, ok := pc.mutation.AppType(); !ok {
+		v := product.DefaultAppType
+		pc.mutation.SetAppType(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (pc *ProductCreate) check() error {
 	if _, ok := pc.mutation.AppID(); !ok {
 		return &ValidationError{Name: "app_id", err: errors.New(`ent: missing required field "Product.app_id"`)}
+	}
+	if _, ok := pc.mutation.AppType(); !ok {
+		return &ValidationError{Name: "app_type", err: errors.New(`ent: missing required field "Product.app_type"`)}
 	}
 	if _, ok := pc.mutation.AppName(); !ok {
 		return &ValidationError{Name: "app_name", err: errors.New(`ent: missing required field "Product.app_name"`)}
@@ -204,6 +230,10 @@ func (pc *ProductCreate) createSpec() (*Product, *sqlgraph.CreateSpec) {
 		_spec.SetField(product.FieldAppID, field.TypeString, value)
 		_node.AppID = value
 	}
+	if value, ok := pc.mutation.AppType(); ok {
+		_spec.SetField(product.FieldAppType, field.TypeInt64, value)
+		_node.AppType = value
+	}
 	if value, ok := pc.mutation.AppName(); ok {
 		_spec.SetField(product.FieldAppName, field.TypeString, value)
 		_node.AppName = value
@@ -245,6 +275,7 @@ func (pcb *ProductCreateBulk) Save(ctx context.Context) ([]*Product, error) {
 	for i := range pcb.builders {
 		func(i int, root context.Context) {
 			builder := pcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ProductMutation)
 				if !ok {

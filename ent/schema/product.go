@@ -19,6 +19,7 @@ func (Product) Fields() []ent.Field {
 		field.Time("updated_at").Optional(),
 		field.Time("deleted_at").Optional(),
 		field.String("app_id").Unique(),
+		field.Int64("app_type").Default(0), // 0-个人 1-收款
 		field.String("app_name"),
 		field.String("app_secret"),
 		field.Int64("app_status"),

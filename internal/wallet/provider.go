@@ -22,6 +22,7 @@ var (
 type IProvider interface {
 	CreateWallet() *Wallet
 	GetBlockchain() Blockchain
+	ValidateAddress(addr string) bool
 }
 
 // 区块网络提供者

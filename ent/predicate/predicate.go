@@ -24,6 +24,9 @@ type Notify func(*sql.Selector)
 // Product is the predicate function for product builders.
 type Product func(*sql.Selector)
 
+// TSession is the predicate function for tsession builders.
+type TSession func(*sql.Selector)
+
 // Transfer is the predicate function for transfer builders.
 type Transfer func(*sql.Selector)
 

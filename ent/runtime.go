@@ -8,6 +8,7 @@ import (
 	"github.com/skyisboss/pay-system/ent/apprun"
 	"github.com/skyisboss/pay-system/ent/balance"
 	"github.com/skyisboss/pay-system/ent/notify"
+	"github.com/skyisboss/pay-system/ent/product"
 	"github.com/skyisboss/pay-system/ent/schema"
 	"github.com/skyisboss/pay-system/ent/transfer"
 	"github.com/skyisboss/pay-system/ent/txn"
@@ -34,6 +35,22 @@ func init() {
 	balanceDescCreatedAt := balanceFields[1].Descriptor()
 	// balance.DefaultCreatedAt holds the default value on creation for the created_at field.
 	balance.DefaultCreatedAt = balanceDescCreatedAt.Default.(time.Time)
+	// balanceDescCountDeposit is the schema descriptor for count_deposit field.
+	balanceDescCountDeposit := balanceFields[10].Descriptor()
+	// balance.DefaultCountDeposit holds the default value on creation for the count_deposit field.
+	balance.DefaultCountDeposit = balanceDescCountDeposit.Default.(uint64)
+	// balanceDescCountWithdraw is the schema descriptor for count_withdraw field.
+	balanceDescCountWithdraw := balanceFields[11].Descriptor()
+	// balance.DefaultCountWithdraw holds the default value on creation for the count_withdraw field.
+	balance.DefaultCountWithdraw = balanceDescCountWithdraw.Default.(uint64)
+	// balanceDescChangeLogs is the schema descriptor for change_logs field.
+	balanceDescChangeLogs := balanceFields[12].Descriptor()
+	// balance.DefaultChangeLogs holds the default value on creation for the change_logs field.
+	balance.DefaultChangeLogs = balanceDescChangeLogs.Default.([]schema.ChangeLogs)
+	// balanceDescVersion is the schema descriptor for version field.
+	balanceDescVersion := balanceFields[13].Descriptor()
+	// balance.DefaultVersion holds the default value on creation for the version field.
+	balance.DefaultVersion = balanceDescVersion.Default.(int64)
 	notifyFields := schema.Notify{}.Fields()
 	_ = notifyFields
 	// notifyDescCreatedAt is the schema descriptor for created_at field.
@@ -48,6 +65,12 @@ func init() {
 	notifyDescHandleMsg := notifyFields[14].Descriptor()
 	// notify.DefaultHandleMsg holds the default value on creation for the handle_msg field.
 	notify.DefaultHandleMsg = notifyDescHandleMsg.Default.(string)
+	productFields := schema.Product{}.Fields()
+	_ = productFields
+	// productDescAppType is the schema descriptor for app_type field.
+	productDescAppType := productFields[5].Descriptor()
+	// product.DefaultAppType holds the default value on creation for the app_type field.
+	product.DefaultAppType = productDescAppType.Default.(int64)
 	transferFields := schema.Transfer{}.Fields()
 	_ = transferFields
 	// transferDescCreatedAt is the schema descriptor for created_at field.

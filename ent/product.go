@@ -25,6 +25,8 @@ type Product struct {
 	DeletedAt time.Time `json:"deleted_at,omitempty"`
 	// AppID holds the value of the "app_id" field.
 	AppID string `json:"app_id,omitempty"`
+	// AppType holds the value of the "app_type" field.
+	AppType int64 `json:"app_type,omitempty"`
 	// AppName holds the value of the "app_name" field.
 	AppName string `json:"app_name,omitempty"`
 	// AppSecret holds the value of the "app_secret" field.
@@ -43,7 +45,7 @@ func (*Product) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case product.FieldID, product.FieldAppStatus, product.FieldWithdrawStatus:
+		case product.FieldID, product.FieldAppType, product.FieldAppStatus, product.FieldWithdrawStatus:
 			values[i] = new(sql.NullInt64)
 		case product.FieldAppID, product.FieldAppName, product.FieldAppSecret, product.FieldWebHook:
 			values[i] = new(sql.NullString)
@@ -93,6 +95,12 @@ func (pr *Product) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field app_id", values[i])
 			} else if value.Valid {
 				pr.AppID = value.String
+			}
+		case product.FieldAppType:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field app_type", values[i])
+			} else if value.Valid {
+				pr.AppType = value.Int64
 			}
 		case product.FieldAppName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -171,6 +179,9 @@ func (pr *Product) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("app_id=")
 	builder.WriteString(pr.AppID)
+	builder.WriteString(", ")
+	builder.WriteString("app_type=")
+	builder.WriteString(fmt.Sprintf("%v", pr.AppType))
 	builder.WriteString(", ")
 	builder.WriteString("app_name=")
 	builder.WriteString(pr.AppName)

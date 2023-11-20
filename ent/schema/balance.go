@@ -55,8 +55,8 @@ func (Balance) Fields() []ent.Field {
 			dialect.MySQL: "decimal(32,0)",
 		}).Comment("总取款金额"),
 		// field.String("withdraw_str").Comment("总取款金额-字符串"),
-		field.Uint64("count_deposit").Comment("存款次数"),
-		field.Uint64("count_withdraw").Comment("取款次数"),
+		field.Uint64("count_deposit").Default(0).Comment("存款次数"),
+		field.Uint64("count_withdraw").Default(0).Comment("取款次数"),
 
 		// 账变记录 记录本行所有资金变动
 		// [
@@ -65,8 +65,8 @@ func (Balance) Fields() []ent.Field {
 		// 	{time:xxx, balance_raw:xxx, balance_str:xxx, action: [in/out], ...},
 		// 	...
 		// ]
-		field.JSON("change_logs", []ChangeLogs{}).Comment("账变记录"),
-		field.Int64("version").Comment("数据版本"),
+		field.JSON("change_logs", []ChangeLogs{}).Default([]ChangeLogs{}).Comment("账变记录"),
+		field.Int64("version").Default(1).Comment("数据版本"),
 	}
 
 }

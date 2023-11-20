@@ -21,6 +21,7 @@ import (
 	"github.com/skyisboss/pay-system/ent/notify"
 	"github.com/skyisboss/pay-system/ent/product"
 	"github.com/skyisboss/pay-system/ent/transfer"
+	"github.com/skyisboss/pay-system/ent/tsession"
 	"github.com/skyisboss/pay-system/ent/txn"
 	"github.com/skyisboss/pay-system/ent/user"
 	"github.com/skyisboss/pay-system/ent/withdraw"
@@ -43,6 +44,8 @@ type Client struct {
 	Notify *NotifyClient
 	// Product is the client for interacting with the Product builders.
 	Product *ProductClient
+	// TSession is the client for interacting with the TSession builders.
+	TSession *TSessionClient
 	// Transfer is the client for interacting with the Transfer builders.
 	Transfer *TransferClient
 	// Txn is the client for interacting with the Txn builders.
@@ -70,6 +73,7 @@ func (c *Client) init() {
 	c.Blockchain = NewBlockchainClient(c.config)
 	c.Notify = NewNotifyClient(c.config)
 	c.Product = NewProductClient(c.config)
+	c.TSession = NewTSessionClient(c.config)
 	c.Transfer = NewTransferClient(c.config)
 	c.Txn = NewTxnClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -165,6 +169,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Blockchain: NewBlockchainClient(cfg),
 		Notify:     NewNotifyClient(cfg),
 		Product:    NewProductClient(cfg),
+		TSession:   NewTSessionClient(cfg),
 		Transfer:   NewTransferClient(cfg),
 		Txn:        NewTxnClient(cfg),
 		User:       NewUserClient(cfg),
@@ -194,6 +199,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Blockchain: NewBlockchainClient(cfg),
 		Notify:     NewNotifyClient(cfg),
 		Product:    NewProductClient(cfg),
+		TSession:   NewTSessionClient(cfg),
 		Transfer:   NewTransferClient(cfg),
 		Txn:        NewTxnClient(cfg),
 		User:       NewUserClient(cfg),
@@ -227,8 +233,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Addres, c.Apprun, c.Balance, c.Blockchain, c.Notify, c.Product, c.Transfer,
-		c.Txn, c.User, c.Withdraw,
+		c.Addres, c.Apprun, c.Balance, c.Blockchain, c.Notify, c.Product, c.TSession,
+		c.Transfer, c.Txn, c.User, c.Withdraw,
 	} {
 		n.Use(hooks...)
 	}
@@ -238,8 +244,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Addres, c.Apprun, c.Balance, c.Blockchain, c.Notify, c.Product, c.Transfer,
-		c.Txn, c.User, c.Withdraw,
+		c.Addres, c.Apprun, c.Balance, c.Blockchain, c.Notify, c.Product, c.TSession,
+		c.Transfer, c.Txn, c.User, c.Withdraw,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -260,6 +266,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Notify.mutate(ctx, m)
 	case *ProductMutation:
 		return c.Product.mutate(ctx, m)
+	case *TSessionMutation:
+		return c.TSession.mutate(ctx, m)
 	case *TransferMutation:
 		return c.Transfer.mutate(ctx, m)
 	case *TxnMutation:
@@ -1071,6 +1079,139 @@ func (c *ProductClient) mutate(ctx context.Context, m *ProductMutation) (Value, 
 	}
 }
 
+// TSessionClient is a client for the TSession schema.
+type TSessionClient struct {
+	config
+}
+
+// NewTSessionClient returns a client for the TSession from the given config.
+func NewTSessionClient(c config) *TSessionClient {
+	return &TSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `tsession.Hooks(f(g(h())))`.
+func (c *TSessionClient) Use(hooks ...Hook) {
+	c.hooks.TSession = append(c.hooks.TSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `tsession.Intercept(f(g(h())))`.
+func (c *TSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TSession = append(c.inters.TSession, interceptors...)
+}
+
+// Create returns a builder for creating a TSession entity.
+func (c *TSessionClient) Create() *TSessionCreate {
+	mutation := newTSessionMutation(c.config, OpCreate)
+	return &TSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TSession entities.
+func (c *TSessionClient) CreateBulk(builders ...*TSessionCreate) *TSessionCreateBulk {
+	return &TSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TSessionClient) MapCreateBulk(slice any, setFunc func(*TSessionCreate, int)) *TSessionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TSessionCreateBulk{err: fmt.Errorf("calling to TSessionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TSessionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TSession.
+func (c *TSessionClient) Update() *TSessionUpdate {
+	mutation := newTSessionMutation(c.config, OpUpdate)
+	return &TSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TSessionClient) UpdateOne(t *TSession) *TSessionUpdateOne {
+	mutation := newTSessionMutation(c.config, OpUpdateOne, withTSession(t))
+	return &TSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TSessionClient) UpdateOneID(id uint64) *TSessionUpdateOne {
+	mutation := newTSessionMutation(c.config, OpUpdateOne, withTSessionID(id))
+	return &TSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TSession.
+func (c *TSessionClient) Delete() *TSessionDelete {
+	mutation := newTSessionMutation(c.config, OpDelete)
+	return &TSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TSessionClient) DeleteOne(t *TSession) *TSessionDeleteOne {
+	return c.DeleteOneID(t.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TSessionClient) DeleteOneID(id uint64) *TSessionDeleteOne {
+	builder := c.Delete().Where(tsession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for TSession.
+func (c *TSessionClient) Query() *TSessionQuery {
+	return &TSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TSession entity by its id.
+func (c *TSessionClient) Get(ctx context.Context, id uint64) (*TSession, error) {
+	return c.Query().Where(tsession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TSessionClient) GetX(ctx context.Context, id uint64) *TSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TSessionClient) Hooks() []Hook {
+	return c.hooks.TSession
+}
+
+// Interceptors returns the client interceptors.
+func (c *TSessionClient) Interceptors() []Interceptor {
+	return c.inters.TSession
+}
+
+func (c *TSessionClient) mutate(ctx context.Context, m *TSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TSession mutation op: %q", m.Op())
+	}
+}
+
 // TransferClient is a client for the Transfer schema.
 type TransferClient struct {
 	config
@@ -1606,11 +1747,11 @@ func (c *WithdrawClient) mutate(ctx context.Context, m *WithdrawMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Addres, Apprun, Balance, Blockchain, Notify, Product, Transfer, Txn, User,
-		Withdraw []ent.Hook
+		Addres, Apprun, Balance, Blockchain, Notify, Product, TSession, Transfer, Txn,
+		User, Withdraw []ent.Hook
 	}
 	inters struct {
-		Addres, Apprun, Balance, Blockchain, Notify, Product, Transfer, Txn, User,
-		Withdraw []ent.Interceptor
+		Addres, Apprun, Balance, Blockchain, Notify, Product, TSession, Transfer, Txn,
+		User, Withdraw []ent.Interceptor
 	}
 )

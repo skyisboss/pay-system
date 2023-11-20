@@ -21,6 +21,7 @@ import (
 	"github.com/skyisboss/pay-system/ent/product"
 	"github.com/skyisboss/pay-system/ent/schema"
 	"github.com/skyisboss/pay-system/ent/transfer"
+	"github.com/skyisboss/pay-system/ent/tsession"
 	"github.com/skyisboss/pay-system/ent/txn"
 	"github.com/skyisboss/pay-system/ent/user"
 	"github.com/skyisboss/pay-system/ent/withdraw"
@@ -41,6 +42,7 @@ const (
 	TypeBlockchain = "Blockchain"
 	TypeNotify     = "Notify"
 	TypeProduct    = "Product"
+	TypeTSession   = "TSession"
 	TypeTransfer   = "Transfer"
 	TypeTxn        = "Txn"
 	TypeUser       = "User"
@@ -6083,6 +6085,8 @@ type ProductMutation struct {
 	updated_at         *time.Time
 	deleted_at         *time.Time
 	app_id             *string
+	app_type           *int64
+	addapp_type        *int64
 	app_name           *string
 	app_secret         *string
 	app_status         *int64
@@ -6383,6 +6387,62 @@ func (m *ProductMutation) ResetAppID() {
 	m.app_id = nil
 }
 
+// SetAppType sets the "app_type" field.
+func (m *ProductMutation) SetAppType(i int64) {
+	m.app_type = &i
+	m.addapp_type = nil
+}
+
+// AppType returns the value of the "app_type" field in the mutation.
+func (m *ProductMutation) AppType() (r int64, exists bool) {
+	v := m.app_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppType returns the old "app_type" field's value of the Product entity.
+// If the Product object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProductMutation) OldAppType(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppType: %w", err)
+	}
+	return oldValue.AppType, nil
+}
+
+// AddAppType adds i to the "app_type" field.
+func (m *ProductMutation) AddAppType(i int64) {
+	if m.addapp_type != nil {
+		*m.addapp_type += i
+	} else {
+		m.addapp_type = &i
+	}
+}
+
+// AddedAppType returns the value that was added to the "app_type" field in this mutation.
+func (m *ProductMutation) AddedAppType() (r int64, exists bool) {
+	v := m.addapp_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAppType resets all changes to the "app_type" field.
+func (m *ProductMutation) ResetAppType() {
+	m.app_type = nil
+	m.addapp_type = nil
+}
+
 // SetAppName sets the "app_name" field.
 func (m *ProductMutation) SetAppName(s string) {
 	m.app_name = &s
@@ -6637,7 +6697,7 @@ func (m *ProductMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProductMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.created_at != nil {
 		fields = append(fields, product.FieldCreatedAt)
 	}
@@ -6649,6 +6709,9 @@ func (m *ProductMutation) Fields() []string {
 	}
 	if m.app_id != nil {
 		fields = append(fields, product.FieldAppID)
+	}
+	if m.app_type != nil {
+		fields = append(fields, product.FieldAppType)
 	}
 	if m.app_name != nil {
 		fields = append(fields, product.FieldAppName)
@@ -6681,6 +6744,8 @@ func (m *ProductMutation) Field(name string) (ent.Value, bool) {
 		return m.DeletedAt()
 	case product.FieldAppID:
 		return m.AppID()
+	case product.FieldAppType:
+		return m.AppType()
 	case product.FieldAppName:
 		return m.AppName()
 	case product.FieldAppSecret:
@@ -6708,6 +6773,8 @@ func (m *ProductMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldDeletedAt(ctx)
 	case product.FieldAppID:
 		return m.OldAppID(ctx)
+	case product.FieldAppType:
+		return m.OldAppType(ctx)
 	case product.FieldAppName:
 		return m.OldAppName(ctx)
 	case product.FieldAppSecret:
@@ -6755,6 +6822,13 @@ func (m *ProductMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAppID(v)
 		return nil
+	case product.FieldAppType:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppType(v)
+		return nil
 	case product.FieldAppName:
 		v, ok := value.(string)
 		if !ok {
@@ -6798,6 +6872,9 @@ func (m *ProductMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *ProductMutation) AddedFields() []string {
 	var fields []string
+	if m.addapp_type != nil {
+		fields = append(fields, product.FieldAppType)
+	}
 	if m.addapp_status != nil {
 		fields = append(fields, product.FieldAppStatus)
 	}
@@ -6812,6 +6889,8 @@ func (m *ProductMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *ProductMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case product.FieldAppType:
+		return m.AddedAppType()
 	case product.FieldAppStatus:
 		return m.AddedAppStatus()
 	case product.FieldWithdrawStatus:
@@ -6825,6 +6904,13 @@ func (m *ProductMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ProductMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case product.FieldAppType:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAppType(v)
+		return nil
 	case product.FieldAppStatus:
 		v, ok := value.(int64)
 		if !ok {
@@ -6899,6 +6985,9 @@ func (m *ProductMutation) ResetField(name string) error {
 	case product.FieldAppID:
 		m.ResetAppID()
 		return nil
+	case product.FieldAppType:
+		m.ResetAppType()
+		return nil
 	case product.FieldAppName:
 		m.ResetAppName()
 		return nil
@@ -6964,6 +7053,595 @@ func (m *ProductMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProductMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Product edge %s", name)
+}
+
+// TSessionMutation represents an operation that mutates the TSession nodes in the graph.
+type TSessionMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uint64
+	key_name      *string
+	key_value     *string
+	ip            *string
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*TSession, error)
+	predicates    []predicate.TSession
+}
+
+var _ ent.Mutation = (*TSessionMutation)(nil)
+
+// tsessionOption allows management of the mutation configuration using functional options.
+type tsessionOption func(*TSessionMutation)
+
+// newTSessionMutation creates new mutation for the TSession entity.
+func newTSessionMutation(c config, op Op, opts ...tsessionOption) *TSessionMutation {
+	m := &TSessionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTSession,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTSessionID sets the ID field of the mutation.
+func withTSessionID(id uint64) tsessionOption {
+	return func(m *TSessionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TSession
+		)
+		m.oldValue = func(ctx context.Context) (*TSession, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TSession.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTSession sets the old TSession of the mutation.
+func withTSession(node *TSession) tsessionOption {
+	return func(m *TSessionMutation) {
+		m.oldValue = func(context.Context) (*TSession, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TSessionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TSessionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TSession entities.
+func (m *TSessionMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TSessionMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TSessionMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TSession.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetKeyName sets the "key_name" field.
+func (m *TSessionMutation) SetKeyName(s string) {
+	m.key_name = &s
+}
+
+// KeyName returns the value of the "key_name" field in the mutation.
+func (m *TSessionMutation) KeyName() (r string, exists bool) {
+	v := m.key_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKeyName returns the old "key_name" field's value of the TSession entity.
+// If the TSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TSessionMutation) OldKeyName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKeyName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKeyName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKeyName: %w", err)
+	}
+	return oldValue.KeyName, nil
+}
+
+// ResetKeyName resets all changes to the "key_name" field.
+func (m *TSessionMutation) ResetKeyName() {
+	m.key_name = nil
+}
+
+// SetKeyValue sets the "key_value" field.
+func (m *TSessionMutation) SetKeyValue(s string) {
+	m.key_value = &s
+}
+
+// KeyValue returns the value of the "key_value" field in the mutation.
+func (m *TSessionMutation) KeyValue() (r string, exists bool) {
+	v := m.key_value
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKeyValue returns the old "key_value" field's value of the TSession entity.
+// If the TSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TSessionMutation) OldKeyValue(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKeyValue is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKeyValue requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKeyValue: %w", err)
+	}
+	return oldValue.KeyValue, nil
+}
+
+// ResetKeyValue resets all changes to the "key_value" field.
+func (m *TSessionMutation) ResetKeyValue() {
+	m.key_value = nil
+}
+
+// SetIP sets the "ip" field.
+func (m *TSessionMutation) SetIP(s string) {
+	m.ip = &s
+}
+
+// IP returns the value of the "ip" field in the mutation.
+func (m *TSessionMutation) IP() (r string, exists bool) {
+	v := m.ip
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIP returns the old "ip" field's value of the TSession entity.
+// If the TSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TSessionMutation) OldIP(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIP is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIP requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIP: %w", err)
+	}
+	return oldValue.IP, nil
+}
+
+// ResetIP resets all changes to the "ip" field.
+func (m *TSessionMutation) ResetIP() {
+	m.ip = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TSessionMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TSessionMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the TSession entity.
+// If the TSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TSessionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *TSessionMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[tsession.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *TSessionMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[tsession.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TSessionMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, tsession.FieldCreatedAt)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *TSessionMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *TSessionMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the TSession entity.
+// If the TSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TSessionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *TSessionMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[tsession.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *TSessionMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[tsession.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *TSessionMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, tsession.FieldUpdatedAt)
+}
+
+// Where appends a list predicates to the TSessionMutation builder.
+func (m *TSessionMutation) Where(ps ...predicate.TSession) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TSessionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TSessionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TSession, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TSessionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TSessionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TSession).
+func (m *TSessionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TSessionMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.key_name != nil {
+		fields = append(fields, tsession.FieldKeyName)
+	}
+	if m.key_value != nil {
+		fields = append(fields, tsession.FieldKeyValue)
+	}
+	if m.ip != nil {
+		fields = append(fields, tsession.FieldIP)
+	}
+	if m.created_at != nil {
+		fields = append(fields, tsession.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, tsession.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TSessionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case tsession.FieldKeyName:
+		return m.KeyName()
+	case tsession.FieldKeyValue:
+		return m.KeyValue()
+	case tsession.FieldIP:
+		return m.IP()
+	case tsession.FieldCreatedAt:
+		return m.CreatedAt()
+	case tsession.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TSessionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case tsession.FieldKeyName:
+		return m.OldKeyName(ctx)
+	case tsession.FieldKeyValue:
+		return m.OldKeyValue(ctx)
+	case tsession.FieldIP:
+		return m.OldIP(ctx)
+	case tsession.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case tsession.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown TSession field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TSessionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case tsession.FieldKeyName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKeyName(v)
+		return nil
+	case tsession.FieldKeyValue:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKeyValue(v)
+		return nil
+	case tsession.FieldIP:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIP(v)
+		return nil
+	case tsession.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case tsession.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TSession field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TSessionMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TSessionMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TSessionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TSession numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TSessionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(tsession.FieldCreatedAt) {
+		fields = append(fields, tsession.FieldCreatedAt)
+	}
+	if m.FieldCleared(tsession.FieldUpdatedAt) {
+		fields = append(fields, tsession.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TSessionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TSessionMutation) ClearField(name string) error {
+	switch name {
+	case tsession.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	case tsession.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TSession nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TSessionMutation) ResetField(name string) error {
+	switch name {
+	case tsession.FieldKeyName:
+		m.ResetKeyName()
+		return nil
+	case tsession.FieldKeyValue:
+		m.ResetKeyValue()
+		return nil
+	case tsession.FieldIP:
+		m.ResetIP()
+		return nil
+	case tsession.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case tsession.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TSession field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TSessionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TSessionMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TSessionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TSessionMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TSessionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TSessionMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TSessionMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown TSession unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TSessionMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown TSession edge %s", name)
 }
 
 // TransferMutation represents an operation that mutates the Transfer nodes in the graph.

@@ -106,9 +106,25 @@ func (bc *BalanceCreate) SetCountDeposit(u uint64) *BalanceCreate {
 	return bc
 }
 
+// SetNillableCountDeposit sets the "count_deposit" field if the given value is not nil.
+func (bc *BalanceCreate) SetNillableCountDeposit(u *uint64) *BalanceCreate {
+	if u != nil {
+		bc.SetCountDeposit(*u)
+	}
+	return bc
+}
+
 // SetCountWithdraw sets the "count_withdraw" field.
 func (bc *BalanceCreate) SetCountWithdraw(u uint64) *BalanceCreate {
 	bc.mutation.SetCountWithdraw(u)
+	return bc
+}
+
+// SetNillableCountWithdraw sets the "count_withdraw" field if the given value is not nil.
+func (bc *BalanceCreate) SetNillableCountWithdraw(u *uint64) *BalanceCreate {
+	if u != nil {
+		bc.SetCountWithdraw(*u)
+	}
 	return bc
 }
 
@@ -121,6 +137,14 @@ func (bc *BalanceCreate) SetChangeLogs(sl []schema.ChangeLogs) *BalanceCreate {
 // SetVersion sets the "version" field.
 func (bc *BalanceCreate) SetVersion(i int64) *BalanceCreate {
 	bc.mutation.SetVersion(i)
+	return bc
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (bc *BalanceCreate) SetNillableVersion(i *int64) *BalanceCreate {
+	if i != nil {
+		bc.SetVersion(*i)
+	}
 	return bc
 }
 
@@ -168,6 +192,22 @@ func (bc *BalanceCreate) defaults() {
 	if _, ok := bc.mutation.CreatedAt(); !ok {
 		v := balance.DefaultCreatedAt
 		bc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := bc.mutation.CountDeposit(); !ok {
+		v := balance.DefaultCountDeposit
+		bc.mutation.SetCountDeposit(v)
+	}
+	if _, ok := bc.mutation.CountWithdraw(); !ok {
+		v := balance.DefaultCountWithdraw
+		bc.mutation.SetCountWithdraw(v)
+	}
+	if _, ok := bc.mutation.ChangeLogs(); !ok {
+		v := balance.DefaultChangeLogs
+		bc.mutation.SetChangeLogs(v)
+	}
+	if _, ok := bc.mutation.Version(); !ok {
+		v := balance.DefaultVersion
+		bc.mutation.SetVersion(v)
 	}
 }
 

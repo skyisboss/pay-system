@@ -1,6 +1,8 @@
 package wallet
 
 import (
+	"regexp"
+
 	btcec "github.com/btcsuite/btcd/btcec/v2"
 	addr "github.com/fbsobreira/gotron-sdk/pkg/address"
 	"github.com/skyisboss/pay-system/internal/rpc/tronrpc"
@@ -12,8 +14,14 @@ type TronProvider struct {
 	Client     *tronrpc.Client
 }
 
+var tronAddressRegex = regexp.MustCompile("^T[a-zA-HJ-NP-Z0-9]{33}$")
+
 func (pv *TronProvider) GetBlockchain() Blockchain {
 	return pv.Blockchain
+}
+
+func (p *TronProvider) ValidateAddress(address string) bool {
+	return tronAddressRegex.MatchString(address)
 }
 
 // 创建钱包

@@ -11,10 +11,11 @@ func NewApi(r *gin.Engine, ioc *ioc.Container) {
 	handle := &handler.Handler{
 		Ioc: ioc,
 	}
-	v1 := r.Group("/api/v1/", middleware.ApiMiddle)
+	// v1 := r.Group("/api/v1/", middleware.ApiMiddle(ioc))
+	v1 := r.Group("/api/v1/")
 	{
-		v1.POST("/address", handle.Address)
-		v1.POST("/withdraw", handle.Withdraw)
+		v1.POST("/withdraw", handle.ApplyWithdraw)
+		v1.POST("/account", handle.CreateAccount)
 	}
 }
 func NewAdmin(r *gin.Engine, ioc *ioc.Container) {

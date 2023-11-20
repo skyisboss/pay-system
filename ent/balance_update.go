@@ -156,6 +156,14 @@ func (bu *BalanceUpdate) SetCountDeposit(u uint64) *BalanceUpdate {
 	return bu
 }
 
+// SetNillableCountDeposit sets the "count_deposit" field if the given value is not nil.
+func (bu *BalanceUpdate) SetNillableCountDeposit(u *uint64) *BalanceUpdate {
+	if u != nil {
+		bu.SetCountDeposit(*u)
+	}
+	return bu
+}
+
 // AddCountDeposit adds u to the "count_deposit" field.
 func (bu *BalanceUpdate) AddCountDeposit(u int64) *BalanceUpdate {
 	bu.mutation.AddCountDeposit(u)
@@ -166,6 +174,14 @@ func (bu *BalanceUpdate) AddCountDeposit(u int64) *BalanceUpdate {
 func (bu *BalanceUpdate) SetCountWithdraw(u uint64) *BalanceUpdate {
 	bu.mutation.ResetCountWithdraw()
 	bu.mutation.SetCountWithdraw(u)
+	return bu
+}
+
+// SetNillableCountWithdraw sets the "count_withdraw" field if the given value is not nil.
+func (bu *BalanceUpdate) SetNillableCountWithdraw(u *uint64) *BalanceUpdate {
+	if u != nil {
+		bu.SetCountWithdraw(*u)
+	}
 	return bu
 }
 
@@ -191,6 +207,14 @@ func (bu *BalanceUpdate) AppendChangeLogs(sl []schema.ChangeLogs) *BalanceUpdate
 func (bu *BalanceUpdate) SetVersion(i int64) *BalanceUpdate {
 	bu.mutation.ResetVersion()
 	bu.mutation.SetVersion(i)
+	return bu
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (bu *BalanceUpdate) SetNillableVersion(i *int64) *BalanceUpdate {
+	if i != nil {
+		bu.SetVersion(*i)
+	}
 	return bu
 }
 
@@ -460,6 +484,14 @@ func (buo *BalanceUpdateOne) SetCountDeposit(u uint64) *BalanceUpdateOne {
 	return buo
 }
 
+// SetNillableCountDeposit sets the "count_deposit" field if the given value is not nil.
+func (buo *BalanceUpdateOne) SetNillableCountDeposit(u *uint64) *BalanceUpdateOne {
+	if u != nil {
+		buo.SetCountDeposit(*u)
+	}
+	return buo
+}
+
 // AddCountDeposit adds u to the "count_deposit" field.
 func (buo *BalanceUpdateOne) AddCountDeposit(u int64) *BalanceUpdateOne {
 	buo.mutation.AddCountDeposit(u)
@@ -470,6 +502,14 @@ func (buo *BalanceUpdateOne) AddCountDeposit(u int64) *BalanceUpdateOne {
 func (buo *BalanceUpdateOne) SetCountWithdraw(u uint64) *BalanceUpdateOne {
 	buo.mutation.ResetCountWithdraw()
 	buo.mutation.SetCountWithdraw(u)
+	return buo
+}
+
+// SetNillableCountWithdraw sets the "count_withdraw" field if the given value is not nil.
+func (buo *BalanceUpdateOne) SetNillableCountWithdraw(u *uint64) *BalanceUpdateOne {
+	if u != nil {
+		buo.SetCountWithdraw(*u)
+	}
 	return buo
 }
 
@@ -495,6 +535,14 @@ func (buo *BalanceUpdateOne) AppendChangeLogs(sl []schema.ChangeLogs) *BalanceUp
 func (buo *BalanceUpdateOne) SetVersion(i int64) *BalanceUpdateOne {
 	buo.mutation.ResetVersion()
 	buo.mutation.SetVersion(i)
+	return buo
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (buo *BalanceUpdateOne) SetNillableVersion(i *int64) *BalanceUpdateOne {
+	if i != nil {
+		buo.SetVersion(*i)
+	}
 	return buo
 }
 

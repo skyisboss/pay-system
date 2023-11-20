@@ -54,10 +54,10 @@ var (
 		{Name: "balance_freeze", Type: field.TypeFloat64, SchemaType: map[string]string{"mysql": "decimal(32,0)"}},
 		{Name: "total_deposit", Type: field.TypeFloat64, SchemaType: map[string]string{"mysql": "decimal(32,0)"}},
 		{Name: "total_withdraw", Type: field.TypeFloat64, SchemaType: map[string]string{"mysql": "decimal(32,0)"}},
-		{Name: "count_deposit", Type: field.TypeUint64},
-		{Name: "count_withdraw", Type: field.TypeUint64},
+		{Name: "count_deposit", Type: field.TypeUint64, Default: 0},
+		{Name: "count_withdraw", Type: field.TypeUint64, Default: 0},
 		{Name: "change_logs", Type: field.TypeJSON},
-		{Name: "version", Type: field.TypeInt64},
+		{Name: "version", Type: field.TypeInt64, Default: 1},
 	}
 	// BalanceTable holds the schema information for the "balance" table.
 	BalanceTable = &schema.Table{
@@ -128,6 +128,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "app_id", Type: field.TypeString, Unique: true},
+		{Name: "app_type", Type: field.TypeInt64, Default: 0},
 		{Name: "app_name", Type: field.TypeString},
 		{Name: "app_secret", Type: field.TypeString},
 		{Name: "app_status", Type: field.TypeInt64},
@@ -139,6 +140,21 @@ var (
 		Name:       "product",
 		Columns:    ProductColumns,
 		PrimaryKey: []*schema.Column{ProductColumns[0]},
+	}
+	// TSessionColumns holds the columns for the "t_session" table.
+	TSessionColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "key_name", Type: field.TypeString},
+		{Name: "key_value", Type: field.TypeString},
+		{Name: "ip", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+	}
+	// TSessionTable holds the schema information for the "t_session" table.
+	TSessionTable = &schema.Table{
+		Name:       "t_session",
+		Columns:    TSessionColumns,
+		PrimaryKey: []*schema.Column{TSessionColumns[0]},
 	}
 	// TransferColumns holds the columns for the "transfer" table.
 	TransferColumns = []*schema.Column{
@@ -244,6 +260,7 @@ var (
 		BlockchainTable,
 		NotifyTable,
 		ProductTable,
+		TSessionTable,
 		TransferTable,
 		TxnTable,
 		UserTable,
@@ -269,6 +286,9 @@ func init() {
 	}
 	ProductTable.Annotation = &entsql.Annotation{
 		Table: "product",
+	}
+	TSessionTable.Annotation = &entsql.Annotation{
+		Table: "t_session",
 	}
 	TransferTable.Annotation = &entsql.Annotation{
 		Table: "transfer",

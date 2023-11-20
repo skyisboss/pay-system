@@ -48,16 +48,17 @@ func (s *Service) GetByChainAndType(ctx context.Context, chain string, types str
 	if err != nil {
 		return nil, nil, err
 	}
-	// 获取gap price
-	// if ret.GasPrice != "" {
-	// 	gas, err := s.GetEthGasPrice(ret.GasPrice)
-	// 	if err != nil {
-	// 		return nil, nil, err
-	// 	}
-	// 	return ret, gas, err
-	// }
 
 	return ret, nil, err
+}
+
+// 根据chain和symbol获取配置信息
+func (s *Service) GetByChainAndSymbol(ctx context.Context, chain, symbol string) (*ent.Blockchain, error) {
+	ret, err := s.db.Query().
+		Where(blockchain.ChainEQ(chain)).
+		Where(blockchain.SymbolEQ(symbol)).
+		First(ctx)
+	return ret, err
 }
 
 // 根据chain获取所有同类网络区块链配置

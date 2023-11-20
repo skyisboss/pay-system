@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/skyisboss/pay-system/ent/schema"
 )
 
 const (
@@ -74,6 +75,14 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt time.Time
+	// DefaultCountDeposit holds the default value on creation for the "count_deposit" field.
+	DefaultCountDeposit uint64
+	// DefaultCountWithdraw holds the default value on creation for the "count_withdraw" field.
+	DefaultCountWithdraw uint64
+	// DefaultChangeLogs holds the default value on creation for the "change_logs" field.
+	DefaultChangeLogs []schema.ChangeLogs
+	// DefaultVersion holds the default value on creation for the "version" field.
+	DefaultVersion int64
 )
 
 // OrderOption defines the ordering options for the Balance queries.

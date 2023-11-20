@@ -19,6 +19,8 @@ const (
 	FieldDeletedAt = "deleted_at"
 	// FieldAppID holds the string denoting the app_id field in the database.
 	FieldAppID = "app_id"
+	// FieldAppType holds the string denoting the app_type field in the database.
+	FieldAppType = "app_type"
 	// FieldAppName holds the string denoting the app_name field in the database.
 	FieldAppName = "app_name"
 	// FieldAppSecret holds the string denoting the app_secret field in the database.
@@ -40,6 +42,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldDeletedAt,
 	FieldAppID,
+	FieldAppType,
 	FieldAppName,
 	FieldAppSecret,
 	FieldAppStatus,
@@ -56,6 +59,11 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultAppType holds the default value on creation for the "app_type" field.
+	DefaultAppType int64
+)
 
 // OrderOption defines the ordering options for the Product queries.
 type OrderOption func(*sql.Selector)
@@ -83,6 +91,11 @@ func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByAppID orders the results by the app_id field.
 func ByAppID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAppID, opts...).ToFunc()
+}
+
+// ByAppType orders the results by the app_type field.
+func ByAppType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAppType, opts...).ToFunc()
 }
 
 // ByAppName orders the results by the app_name field.

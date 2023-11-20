@@ -19,6 +19,7 @@ import (
 	"github.com/skyisboss/pay-system/ent/notify"
 	"github.com/skyisboss/pay-system/ent/product"
 	"github.com/skyisboss/pay-system/ent/transfer"
+	"github.com/skyisboss/pay-system/ent/tsession"
 	"github.com/skyisboss/pay-system/ent/txn"
 	"github.com/skyisboss/pay-system/ent/user"
 	"github.com/skyisboss/pay-system/ent/withdraw"
@@ -88,6 +89,7 @@ func checkColumn(table, column string) error {
 			blockchain.Table: blockchain.ValidColumn,
 			notify.Table:     notify.ValidColumn,
 			product.Table:    product.ValidColumn,
+			tsession.Table:   tsession.ValidColumn,
 			transfer.Table:   transfer.ValidColumn,
 			txn.Table:        txn.ValidColumn,
 			user.Table:       user.ValidColumn,

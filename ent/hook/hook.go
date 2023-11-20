@@ -81,6 +81,18 @@ func (f ProductFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProductMutation", m)
 }
 
+// The TSessionFunc type is an adapter to allow the use of ordinary
+// function as TSession mutator.
+type TSessionFunc func(context.Context, *ent.TSessionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TSessionMutation", m)
+}
+
 // The TransferFunc type is an adapter to allow the use of ordinary
 // function as Transfer mutator.
 type TransferFunc func(context.Context, *ent.TransferMutation) (ent.Value, error)

@@ -94,6 +94,27 @@ func (pu *ProductUpdate) SetAppID(s string) *ProductUpdate {
 	return pu
 }
 
+// SetAppType sets the "app_type" field.
+func (pu *ProductUpdate) SetAppType(i int64) *ProductUpdate {
+	pu.mutation.ResetAppType()
+	pu.mutation.SetAppType(i)
+	return pu
+}
+
+// SetNillableAppType sets the "app_type" field if the given value is not nil.
+func (pu *ProductUpdate) SetNillableAppType(i *int64) *ProductUpdate {
+	if i != nil {
+		pu.SetAppType(*i)
+	}
+	return pu
+}
+
+// AddAppType adds i to the "app_type" field.
+func (pu *ProductUpdate) AddAppType(i int64) *ProductUpdate {
+	pu.mutation.AddAppType(i)
+	return pu
+}
+
 // SetAppName sets the "app_name" field.
 func (pu *ProductUpdate) SetAppName(s string) *ProductUpdate {
 	pu.mutation.SetAppName(s)
@@ -200,6 +221,12 @@ func (pu *ProductUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.AppID(); ok {
 		_spec.SetField(product.FieldAppID, field.TypeString, value)
 	}
+	if value, ok := pu.mutation.AppType(); ok {
+		_spec.SetField(product.FieldAppType, field.TypeInt64, value)
+	}
+	if value, ok := pu.mutation.AddedAppType(); ok {
+		_spec.AddField(product.FieldAppType, field.TypeInt64, value)
+	}
 	if value, ok := pu.mutation.AppName(); ok {
 		_spec.SetField(product.FieldAppName, field.TypeString, value)
 	}
@@ -304,6 +331,27 @@ func (puo *ProductUpdateOne) ClearDeletedAt() *ProductUpdateOne {
 // SetAppID sets the "app_id" field.
 func (puo *ProductUpdateOne) SetAppID(s string) *ProductUpdateOne {
 	puo.mutation.SetAppID(s)
+	return puo
+}
+
+// SetAppType sets the "app_type" field.
+func (puo *ProductUpdateOne) SetAppType(i int64) *ProductUpdateOne {
+	puo.mutation.ResetAppType()
+	puo.mutation.SetAppType(i)
+	return puo
+}
+
+// SetNillableAppType sets the "app_type" field if the given value is not nil.
+func (puo *ProductUpdateOne) SetNillableAppType(i *int64) *ProductUpdateOne {
+	if i != nil {
+		puo.SetAppType(*i)
+	}
+	return puo
+}
+
+// AddAppType adds i to the "app_type" field.
+func (puo *ProductUpdateOne) AddAppType(i int64) *ProductUpdateOne {
+	puo.mutation.AddAppType(i)
 	return puo
 }
 
@@ -442,6 +490,12 @@ func (puo *ProductUpdateOne) sqlSave(ctx context.Context) (_node *Product, err e
 	}
 	if value, ok := puo.mutation.AppID(); ok {
 		_spec.SetField(product.FieldAppID, field.TypeString, value)
+	}
+	if value, ok := puo.mutation.AppType(); ok {
+		_spec.SetField(product.FieldAppType, field.TypeInt64, value)
+	}
+	if value, ok := puo.mutation.AddedAppType(); ok {
+		_spec.AddField(product.FieldAppType, field.TypeInt64, value)
 	}
 	if value, ok := puo.mutation.AppName(); ok {
 		_spec.SetField(product.FieldAppName, field.TypeString, value)

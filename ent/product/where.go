@@ -74,6 +74,11 @@ func AppID(v string) predicate.Product {
 	return predicate.Product(sql.FieldEQ(FieldAppID, v))
 }
 
+// AppType applies equality check predicate on the "app_type" field. It's identical to AppTypeEQ.
+func AppType(v int64) predicate.Product {
+	return predicate.Product(sql.FieldEQ(FieldAppType, v))
+}
+
 // AppName applies equality check predicate on the "app_name" field. It's identical to AppNameEQ.
 func AppName(v string) predicate.Product {
 	return predicate.Product(sql.FieldEQ(FieldAppName, v))
@@ -312,6 +317,46 @@ func AppIDEqualFold(v string) predicate.Product {
 // AppIDContainsFold applies the ContainsFold predicate on the "app_id" field.
 func AppIDContainsFold(v string) predicate.Product {
 	return predicate.Product(sql.FieldContainsFold(FieldAppID, v))
+}
+
+// AppTypeEQ applies the EQ predicate on the "app_type" field.
+func AppTypeEQ(v int64) predicate.Product {
+	return predicate.Product(sql.FieldEQ(FieldAppType, v))
+}
+
+// AppTypeNEQ applies the NEQ predicate on the "app_type" field.
+func AppTypeNEQ(v int64) predicate.Product {
+	return predicate.Product(sql.FieldNEQ(FieldAppType, v))
+}
+
+// AppTypeIn applies the In predicate on the "app_type" field.
+func AppTypeIn(vs ...int64) predicate.Product {
+	return predicate.Product(sql.FieldIn(FieldAppType, vs...))
+}
+
+// AppTypeNotIn applies the NotIn predicate on the "app_type" field.
+func AppTypeNotIn(vs ...int64) predicate.Product {
+	return predicate.Product(sql.FieldNotIn(FieldAppType, vs...))
+}
+
+// AppTypeGT applies the GT predicate on the "app_type" field.
+func AppTypeGT(v int64) predicate.Product {
+	return predicate.Product(sql.FieldGT(FieldAppType, v))
+}
+
+// AppTypeGTE applies the GTE predicate on the "app_type" field.
+func AppTypeGTE(v int64) predicate.Product {
+	return predicate.Product(sql.FieldGTE(FieldAppType, v))
+}
+
+// AppTypeLT applies the LT predicate on the "app_type" field.
+func AppTypeLT(v int64) predicate.Product {
+	return predicate.Product(sql.FieldLT(FieldAppType, v))
+}
+
+// AppTypeLTE applies the LTE predicate on the "app_type" field.
+func AppTypeLTE(v int64) predicate.Product {
+	return predicate.Product(sql.FieldLTE(FieldAppType, v))
 }
 
 // AppNameEQ applies the EQ predicate on the "app_name" field.

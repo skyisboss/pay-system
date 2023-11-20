@@ -24,6 +24,8 @@ type Tx struct {
 	Notify *NotifyClient
 	// Product is the client for interacting with the Product builders.
 	Product *ProductClient
+	// TSession is the client for interacting with the TSession builders.
+	TSession *TSessionClient
 	// Transfer is the client for interacting with the Transfer builders.
 	Transfer *TransferClient
 	// Txn is the client for interacting with the Txn builders.
@@ -169,6 +171,7 @@ func (tx *Tx) init() {
 	tx.Blockchain = NewBlockchainClient(tx.config)
 	tx.Notify = NewNotifyClient(tx.config)
 	tx.Product = NewProductClient(tx.config)
+	tx.TSession = NewTSessionClient(tx.config)
 	tx.Transfer = NewTransferClient(tx.config)
 	tx.Txn = NewTxnClient(tx.config)
 	tx.User = NewUserClient(tx.config)

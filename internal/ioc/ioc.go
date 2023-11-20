@@ -17,6 +17,7 @@ import (
 	"github.com/skyisboss/pay-system/internal/service/blockchain"
 	"github.com/skyisboss/pay-system/internal/service/notify"
 	"github.com/skyisboss/pay-system/internal/service/product"
+	"github.com/skyisboss/pay-system/internal/service/session"
 	"github.com/skyisboss/pay-system/internal/service/transfer"
 	"github.com/skyisboss/pay-system/internal/service/txn"
 	"github.com/skyisboss/pay-system/internal/service/user"
@@ -54,6 +55,7 @@ type Container struct {
 	withdrawService   *withdraw.Service
 	transferService   *transfer.Service
 	apprunService     *apprun.Service
+	sessionService    *session.Service
 }
 
 func New(ctx context.Context, cfg *config.Config, logger *zerolog.Logger) *Container {
@@ -205,6 +207,14 @@ func (c *Container) ApprunService() *apprun.Service {
 	})
 
 	return c.apprunService
+}
+
+func (c *Container) SessionService() *session.Service {
+	c.init("service.session", func() {
+		c.sessionService = session.New(c.DBClient(), c.logger)
+	})
+
+	return c.sessionService
 }
 
 func (c *Container) Context() context.Context {

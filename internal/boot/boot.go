@@ -52,10 +52,10 @@ func (b *Boot) Logger() *zerolog.Logger {
 
 // 对外api服务
 func (b *Boot) RunServerApi() {
-	app := gin.New()
-	app.Use(gin.Logger(), gin.Recovery())
-	router.NewApi(app, b.Ioc())
-
+	// app := gin.New()
+	// app.Use(gin.Logger(), gin.Recovery())
+	// router.NewApi(app, b.Ioc())
+	app := InitServer(b.Ioc(), "api")
 	app.Run(":52088")
 }
 
@@ -100,4 +100,16 @@ func (b *Boot) RunServerTask() {
 		}
 		c.Start()
 	*/
+}
+
+func InitServer(ioc *ioc.Container, intiRouter string) *gin.Engine {
+	r := gin.New()
+	r.Use(gin.Logger(), gin.Recovery())
+	if intiRouter == "api" {
+		router.NewApi(r, ioc)
+	} else {
+		router.NewAdmin(r, ioc)
+	}
+
+	return r
 }

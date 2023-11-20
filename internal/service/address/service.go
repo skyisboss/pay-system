@@ -63,3 +63,12 @@ func (s *Service) GetByAddress(ctx context.Context, address string) (*ent.Addres
 		First(ctx)
 	return ret, err
 }
+
+func (s *Service) GetNewAddress(ctx context.Context, chainID uint64) (*ent.Addres, error) {
+	ret, err := s.client.Addres.
+		Query().
+		Where(addres.UseTo(0)).
+		Where(addres.ChainID(chainID)).
+		First(ctx)
+	return ret, err
+}
